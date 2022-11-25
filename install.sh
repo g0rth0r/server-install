@@ -52,7 +52,7 @@ su -c 'git -C ~ clone https://github.com/g0rth0r/portainer-stacks.git' arbiter
 # OTHER PACKAGES
 echo "[*] Installing other packages"
 wait_key
-apt install -y samba ffmpeg lvm2 smartmontools rsync rsnapshot openvpn
+apt install -y samba ffmpeg lvm2 smartmontools rsync openvpn
 
 # Install for YT-DLP
 echo "[*] Installing Youtube-DL"
@@ -65,9 +65,37 @@ chmod a+rx /usr/local/bin/yt-dlp  # Make executable
 # https://www.linuxserver.io/blog/2017-11-25-how-to-monitor-your-server-using-grafana-influxdb-and-telegraf
 echo "[*] Setting up permisison for Grafana"
 wait_key
-chown arbiter:root -R /home/arbiter/portainer-stacks/tgi-stack/appdata/grafana
-chmod 775 -R /home/arbiter/portainer-stacks/tgi-stack/appdata/grafana
+chown arbiter:root -R /home/arbiter/portainer-stacks/tgi-stack/grafana
+chmod 775 -R /home/arbiter/portainer-stacks/tgi-stack/grafana
+# Telegraph Install
+echo "[*] Installing Telegraph"
+curl -sL https://repos.influxdata.com/influxdb.key | sudo apt-key add -
+echo "deb https://repos.influxdata.com/debian stretch stable" | sudo tee /etc/apt/sources.list.d/influxdb.list
+apt update && apt install -y telegraf
+apt install hddtemp lm-sensors
+systemctl restart telegraf
+systemctl status telegraf -l
 
 
 
+
+# CUSTOM SCRIPTS
+echo "[*] Cloning and install custom scripts" 
+wait_key
+su -c 'git -C ~ clone https://github.com/g0rth0r/useful-scripts.git' arbiter
+su -c 'mkdir ~/bin' arbiter
+chmod +x /home/arbiter/useful-scripts/install.sh
+su -c '/bin/bash ~/useful-scripts/install.sh' arbiter 
+su -c 'echo "export PATH=$PATH:~/bin" >> ~/.bashrc'arbiter
+
+#Backup script
+git -C ~ clone https://github.com/g0rth0r/backup-sync.git
+
+
+# Crontabs
+echo "[*] Loading new cron files" 
+wait_key
+su -c 'crontab /home/arbiter/useful-scripts/os-files/pi-cron' arbiter
+su -c 'crontab /home/arbiter/useful-scripts/os-files/vpn-cron' vpn
+crontab /home/arbiter/useful-scripts/os-files/root
 
