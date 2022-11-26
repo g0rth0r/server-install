@@ -24,6 +24,10 @@ id -u vpn &>/dev/null || useradd -m vpn
 groupadd -f -g 1003 archive
 echo "Set password for arbiter"
 passwd arbiter
+
+# Save the main user home directory
+GUEST_HOME=$(su -c 'echo $HOME' arbiter)
+
 echo "Set password for vpn"
 passwd vpn
 
@@ -65,8 +69,8 @@ chmod a+rx /usr/local/bin/yt-dlp  # Make executable
 # https://www.linuxserver.io/blog/2017-11-25-how-to-monitor-your-server-using-grafana-influxdb-and-telegraf
 echo "[*] Setting up permisison for Grafana"
 wait_key
-chown arbiter:root -R /home/arbiter/portainer-stacks/tgi-stack/grafana
-chmod 775 -R /home/arbiter/portainer-stacks/tgi-stack/grafana
+chown arbiter:root -R $GUEST_HOME/portainer-stacks/tgi-stack/grafana
+chmod 775 -R $GUEST_HOME/portainer-stacks/tgi-stack/grafana
 # Telegraph Install
 echo "[*] Installing Telegraph"
 curl -sL https://repos.influxdata.com/influxdb.key | sudo apt-key add -
@@ -74,28 +78,22 @@ echo "deb https://repos.influxdata.com/debian stretch stable" | sudo tee /etc/ap
 apt update && apt install -y telegraf
 apt install hddtemp lm-sensors
 systemctl restart telegraf
-systemctl status telegraf -l
-
-
-
+systemctl status telegraf
 
 # CUSTOM SCRIPTS
-echo "[*] Cloning and install custom scripts" 
-wait_key
+echo "[*] Cloning and install custom scripts"
 su -c 'git -C ~ clone https://github.com/g0rth0r/useful-scripts.git' arbiter
 su -c 'mkdir ~/bin' arbiter
-chmod +x /home/arbiter/useful-scripts/install.sh
-su -c '/bin/bash ~/useful-scripts/install.sh' arbiter 
-su -c 'echo "export PATH=$PATH:~/bin" >> ~/.bashrc'arbiter
-
+chmod +x $GUEST_HOME/useful-scripts/install.sh
+cd $GUEST_HOME/useful-scripts
+su -c '/bin/bash ~/useful-scripts/install.sh' arbiter
 #Backup script
 git -C ~ clone https://github.com/g0rth0r/backup-sync.git
-
+cd $GUEST_HOME
 
 # Crontabs
 echo "[*] Loading new cron files" 
 wait_key
-su -c 'crontab /home/arbiter/useful-scripts/os-files/pi-cron' arbiter
-su -c 'crontab /home/arbiter/useful-scripts/os-files/vpn-cron' vpn
-crontab /home/arbiter/useful-scripts/os-files/root
-
+su -c "crontab $HOME_GUEST/useful-scripts/os-files/pi-cron" arbiter
+su -c "crontab $HOME_GUEST/useful-scripts/os-files/vpn-cron" vpn
+crontab $GUEST_HOME/useful-scripts/os-files/root-cron'
