@@ -76,6 +76,8 @@ echo "[*] Installing Telegraph"
 curl -sL https://repos.influxdata.com/influxdb.key | sudo apt-key add -
 echo "deb https://repos.influxdata.com/debian stretch stable" | sudo tee /etc/apt/sources.list.d/influxdb.list
 apt update && apt install -y telegraf
+
+#install a few sensors
 apt install hddtemp lm-sensors
 systemctl restart telegraf
 systemctl status telegraf
@@ -94,6 +96,6 @@ cd $GUEST_HOME
 # Crontabs
 echo "[*] Loading new cron files" 
 wait_key
-su -c "crontab $HOME_GUEST/useful-scripts/os-files/pi-cron" arbiter
-su -c "crontab $HOME_GUEST/useful-scripts/os-files/vpn-cron" vpn
-crontab $GUEST_HOME/useful-scripts/os-files/root-cron'
+su -c "crontab $GUEST_HOME/useful-scripts/os-files/pi-cron" arbiter
+su -c "crontab $GUEST_HOME/useful-scripts/os-files/vpn-cron" vpn
+crontab $GUEST_HOME/useful-scripts/os-files/root-cron
