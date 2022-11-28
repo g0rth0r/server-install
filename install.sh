@@ -3,6 +3,8 @@
 #trap 'exec 2>&4 1>&3' 0 1 2 3
 #exec 1>log.out 2>&1
 
+OLD_IP=192.168.2.20
+
 wait_key (){ read -p "Press enter to continue"; }
 
 # INITIAL UPDATES and CORE PACKAGE 
@@ -11,7 +13,7 @@ wait_key
 apt update && apt upgrade -f -y --force-yes
 echo "[*] Installing SSH and git"
 wait_key
-apt install -y openssh-server git
+apt install -y openssh-server git cifs-utils 
 sleep 5
 systemctl status sshd
 systemctl enable --now sshd
@@ -22,6 +24,8 @@ wait_key
 id -u arbiter &>/dev/null || useradd -m arbiter
 id -u vpn &>/dev/null || useradd -m vpn
 groupadd -f -g 1003 archive
+usermod -a -G archive arbiter
+usermod -a -G archive vpn
 echo "Set password for arbiter"
 passwd arbiter
 
@@ -31,6 +35,20 @@ GUEST_HOME=$(su -c 'echo $HOME' arbiter)
 echo "Set password for vpn"
 passwd vpn
 
+
+# Create mount point and mount SMB 
+echo "[*] Creating mount points and SMB credential file"
+mkdir /mnt/archive /mnt/beta
+chown -R arbiter:archive /mnt/archive
+chown -R arbiter:archive /mnt/beta
+echo -en 'username=xxxxxx\npassword=xxxxxx\n' >/root/.smbcredentials
+chmod 400 /root/.smbcredentials
+echo "[!] Edit your credentials in the file..."
+wait_key
+nano /root/.smbcredentials
+sudo mount -t cifs -o rw,vers=3.0,credentials=/root/.smbcredentials //192.168.2.20/archive /mnt/archive
+sudo mount -t cifs -o rw,vers=3.0,credentials=/root/.smbcredentials //192.168.2.20/beta /mnt/beta
+ 
 
 #DOCKER and PORTAINER
 echo "[*] Installing Docker and Portainer"
@@ -56,7 +74,7 @@ su -c 'git -C ~ clone https://github.com/g0rth0r/portainer-stacks.git' arbiter
 # OTHER PACKAGES
 echo "[*] Installing other packages"
 wait_key
-apt install -y samba ffmpeg lvm2 smartmontools rsync openvpn
+apt install -y samba ffmpeg lvm2 smartmontools rsync openvpn neofetch
 
 # Install for YT-DLP
 echo "[*] Installing Youtube-DL"
