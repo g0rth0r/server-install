@@ -38,16 +38,16 @@ passwd vpn
 
 # Create mount point and mount SMB 
 echo "[*] Creating mount points and SMB credential file"
-mkdir /mnt/archive /mnt/beta
-chown -R arbiter:archive /mnt/archive
+mkdir /mnt/storage/root /mnt/beta/root
+chown -R arbiter:archive /mnt/storage
 chown -R arbiter:archive /mnt/beta
 echo -en 'username=xxxxxx\npassword=xxxxxx\n' >/root/.smbcredentials
 chmod 400 /root/.smbcredentials
 echo "[!] Edit your credentials in the file..."
 wait_key
 nano /root/.smbcredentials
-sudo mount -t cifs -o rw,vers=3.0,credentials=/root/.smbcredentials //192.168.2.20/archive /mnt/archive
-sudo mount -t cifs -o rw,vers=3.0,credentials=/root/.smbcredentials //192.168.2.20/beta /mnt/beta
+sudo mount -t cifs -o rw,vers=3.0,credentials=/root/.smbcredentials //192.168.2.20/archive /mnt/storage/root
+sudo mount -t cifs -o rw,vers=3.0,credentials=/root/.smbcredentials //192.168.2.20/beta /mnt/beta/root
  
 
 #DOCKER and PORTAINER
