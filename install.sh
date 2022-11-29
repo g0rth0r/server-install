@@ -26,6 +26,7 @@ id -u vpn &>/dev/null || useradd -m vpn
 groupadd -f -g 1003 archive
 usermod -a -G archive arbiter
 usermod -s /bin/bash arbiter
+usermod -aG sudo arbiter
 usermod -a -G archive vpn
 usermod -s /bin/bash vpn
 echo "Set password for arbiter"
