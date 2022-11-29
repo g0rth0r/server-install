@@ -25,7 +25,9 @@ id -u arbiter &>/dev/null || useradd -m arbiter
 id -u vpn &>/dev/null || useradd -m vpn
 groupadd -f -g 1003 archive
 usermod -a -G archive arbiter
+usermod -s /bin/bash arbiter
 usermod -a -G archive vpn
+usermod -s /bin/bash vpn
 echo "Set password for arbiter"
 passwd arbiter
 
@@ -38,7 +40,7 @@ passwd vpn
 
 # Create mount point and mount SMB 
 echo "[*] Creating mount points and SMB credential file"
-mkdir /mnt/storage/root /mnt/beta/root
+mkdir -p /mnt/storage/root /mnt/beta/root
 chown -R arbiter:archive /mnt/storage
 chown -R arbiter:archive /mnt/beta
 echo -en 'username=xxxxxx\npassword=xxxxxx\n' >/root/.smbcredentials
@@ -71,10 +73,35 @@ echo "[*] Cloning Portainer Stacks"
 wait_key
 su -c 'git -C ~ clone https://github.com/g0rth0r/portainer-stacks.git' arbiter
 
+# VNC Viewer
+GUEST_HOME=/home/arbiter
+echo "[*] Installing VNC server"
+wait_key
+apt install -y xfce4 xfce4-goodies
+apt install -y tightvncserver
+apt install -y dbus-x11
+# entering configuration
+su -c "vncserver" arbiter
+su -c "vncserver -kill :1" arbiter
+su -c "mv ~/.vnc/xstartup ~/.vnc/xstartup.bak" arbiter
+su -c 'printf "#!/bin/bash\nxrdb $HOME/.Xresources\nstartxfce4 &\n">~/.vnc/xstartup' arbiter
+chmod +x $GUEST_HOME/.vnc/xstartup
+su -c "vncserver" arbiter
+echo "W1VuaXRdCkRlc2NyaXB0aW9uPVN0YXJ0IFRpZ2h0Vk5DIHNlcnZlciBhdCBzdGFydHVwCkFmdGVyPXN5c2xvZy50YXJnZXQgbmV0d29yay50YXJnZXQKCltTZXJ2aWNlXQpUeXBlPWZvcmtpbmcKVXNlcj1hcmJpdGVyCkdyb3VwPWFyYml0ZXIKV29ya2luZ0RpcmVjdG9yeT0vaG9tZS9hcmJpdGVyCgpQSURGaWxlPS9ob21lL2FyYml0ZXIvLnZuYy8lSDolaS5waWQKRXhlY1N0YXJ0UHJlPS0vdXNyL2Jpbi92bmNzZXJ2ZXIgLWtpbGwgOiVpID4gL2Rldi9udWxsIDI+JjEKRXhlY1N0YXJ0PS91c3IvYmluL3ZuY3NlcnZlciAtZGVwdGggMjQgLWdlb21ldHJ5IDEyODB4ODAwIDolaQpFeGVjU3RvcD0vdXNyL2Jpbi92bmNzZXJ2ZXIgLWtpbGwgOiVpCgpbSW5zdGFsbF0KV2FudGVkQnk9bXVsdGktdXNlci50YXJnZXQK" | base64 -d >/etc/systemd/system/vncserver@.service
+systemctl daemon-reload
+systemctl enable vncserver@1.service
+su -c "vncserver -kill :1" arbiter
+systemctl start vncserver@1
+sleep 5
+systemctl status vncserver@1
+
+
 # OTHER PACKAGES
 echo "[*] Installing other packages"
 wait_key
-apt install -y samba ffmpeg lvm2 smartmontools rsync openvpn neofetch
+apt install -y samba ffmpeg lvm2 smartmontools rsync openvpn neofetch ncdu
+
+
 
 # Install for YT-DLP
 echo "[*] Installing Youtube-DL"
