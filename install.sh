@@ -49,8 +49,8 @@ chmod 400 /root/.smbcredentials
 echo "[!] Edit your credentials in the file..."
 wait_key
 nano /root/.smbcredentials
-sudo mount -t cifs -o rw,vers=3.0,credentials=/root/.smbcredentials //192.168.2.20/archive /mnt/storage/root
-sudo mount -t cifs -o rw,vers=3.0,credentials=/root/.smbcredentials //192.168.2.20/beta /mnt/beta/root
+mount -t cifs -o rw,vers=3.0,credentials=/root/.smbcredentials //192.168.2.20/archive /mnt/storage/root
+mount -t cifs -o rw,vers=3.0,credentials=/root/.smbcredentials //192.168.2.20/beta /mnt/beta/root
  
 
 #DOCKER and PORTAINER
@@ -100,7 +100,7 @@ systemctl status vncserver@1
 # OTHER PACKAGES
 echo "[*] Installing other packages"
 wait_key
-apt install -y samba ffmpeg lvm2 smartmontools rsync openvpn neofetch ncdu
+apt install -y samba ffmpeg lvm2 smartmontools rsync openvpn neofetch ncdu iotop
 
 
 
